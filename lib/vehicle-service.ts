@@ -1,19 +1,17 @@
-import { connectToDatabase } from "./mongodb"
-import { ObjectId } from "mongodb"
+"use client";
 
-export async function getVehicles(userId: string) {
-  const { db } = await connectToDatabase()
-
-  return db.collection("vehicles").find({ userId }).sort({ createdAt: -1 }).toArray()
+export async function getVehicles() {
+  const response = await fetch("/api/vehicles");
+  if (!response.ok) {
+    throw new Error("Failed to fetch vehicles");
+  }
+  return response.json();
 }
 
 export async function getVehicleById(id: string) {
-  const { db } = await connectToDatabase()
-
-  if (!ObjectId.isValid(id)) {
-    return null
+  const response = await fetch(`/api/vehicles?id=${id}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch vehicle");
   }
-
-  return db.collection("vehicles").findOne({ _id: new ObjectId(id) })
+  return response.json();
 }
-

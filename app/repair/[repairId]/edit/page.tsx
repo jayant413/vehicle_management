@@ -1,32 +1,60 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useParams, useRouter } from "next/navigation";
 import { getRepairById } from "@/lib/repair-service";
 import { getVehicleById } from "@/lib/vehicle-service";
 import RepairForm from "@/components/repair-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RepairDetailsProps } from "@/components/repair-details";
-export default async function EditRepairPage({
-  params,
-}: {
-  params: { repairId: string };
-}) {
-  const { userId } = await auth();
 
-  if (!userId) {
-    redirect("/sign-in");
+export default function EditRepairPage() {
+  const { isSignedIn, userId } = useAuth();
+  const params = useParams();
+  const router = useRouter();
+  const [repair, setRepair] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      router.push("/sign-in");
+      return;
+    }
+
+    const fetchRepair = async () => {
+      try {
+        const repairData = await getRepairById(params.repairId as string);
+        if (!repairData) {
+          router.push("/");
+          return;
+        }
+
+        const vehicleData = await getVehicleById(repairData.vehicleId);
+        if (!vehicleData || vehicleData.userId !== userId) {
+          router.push("/");
+          return;
+        }
+
+        setRepair(repairData);
+      } catch (error) {
+        console.error("Error fetching repair:", error);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRepair();
+  }, [isSignedIn, userId, params.repairId, router]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
-
-  const repair = await getRepairById(params.repairId);
 
   if (!repair) {
-    redirect("/");
-  }
-
-  const vehicle = await getVehicleById(repair.vehicleId);
-
-  if (!vehicle || vehicle.userId !== userId) {
-    redirect("/");
+    return null;
   }
 
   return (
