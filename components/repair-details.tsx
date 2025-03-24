@@ -56,9 +56,9 @@ export default function RepairDetails({ repair }: RepairDetailsProps) {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Amount
+                    Quantity
                   </p>
-                  <p className="font-medium">${repair.amount.toFixed(2)}</p>
+                  <p className="font-medium">{repair.amount}</p>
                 </div>
               </div>
               <div>

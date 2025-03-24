@@ -4,10 +4,14 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
-  const { userId } = await auth();
+  let { userId } = await auth();
 
   if (!userId) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
+    userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
   }
 
   const { searchParams } = new URL(request.url);

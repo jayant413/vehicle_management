@@ -97,7 +97,7 @@ export default function RepairList({ vehicleId }: { vehicleId: string }) {
           <TableRow>
             <TableHead className="w-12">S.No</TableHead>
             <TableHead>Repair Date</TableHead>
-            <TableHead>Amount</TableHead>
+            <TableHead>Quantity</TableHead>
             <TableHead>Tool Name</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -109,7 +109,7 @@ export default function RepairList({ vehicleId }: { vehicleId: string }) {
               <TableCell>
                 {new Date(repair.repairDate).toLocaleDateString()}
               </TableCell>
-              <TableCell>${repair.amount.toFixed(2)}</TableCell>
+              <TableCell>{repair.amount}</TableCell>
               <TableCell>{repair.toolName}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
