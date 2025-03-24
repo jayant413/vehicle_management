@@ -43,7 +43,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
             </div>
             <div className="space-y-2">
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-semibold">Owner:</span>{" "}
+                <span className="font-semibold">Driver:</span>{" "}
                 {vehicle.ownerName}
               </p>
               <p className="text-gray-600 dark:text-gray-400">

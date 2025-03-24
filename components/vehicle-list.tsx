@@ -97,7 +97,7 @@ export default function VehicleList() {
           <CardContent className="p-6">
             <h2 className="text-xl font-bold mb-2">{vehicle.name}</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-1">
-              <span className="font-semibold">Owner:</span> {vehicle.ownerName}
+              <span className="font-semibold">Driver:</span> {vehicle.ownerName}
             </p>
             <p className="text-gray-600 dark:text-gray-400">
               <span className="font-semibold">Vehicle Number:</span>{" "}
