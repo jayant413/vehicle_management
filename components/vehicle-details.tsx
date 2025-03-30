@@ -1,20 +1,48 @@
+"use client";
+
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Vehicle } from "@/lib/types";
 
-export interface VehicleDetailsProps {
-  vehicle: {
-    _id: string;
-    name: string;
-    ownerName: string;
-    vehicleNumber: string;
-    imageUrl: string;
-  };
-}
+export default function VehicleDetails() {
+  const { vehicleId } = useParams();
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
+  useEffect(() => {
+    async function fetchVehicle() {
+      try {
+        const response = await fetch(`/api/vehicles/${vehicleId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch vehicle");
+        }
+        const data = await response.json();
+        setVehicle(data);
+      } catch (error) {
+        console.error("Error fetching vehicle:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (vehicleId) {
+      fetchVehicle();
+    }
+  }, [vehicleId]);
+
+  if (loading) {
+    return <div>Loading vehicle details...</div>;
+  }
+
+  if (!vehicle) {
+    return <div>Vehicle not found</div>;
+  }
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -43,7 +71,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
             </div>
             <div className="space-y-2">
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-semibold">Driver:</span>{" "}
+                <span className="font-semibold">Owner:</span>{" "}
                 {vehicle.ownerName}
               </p>
               <p className="text-gray-600 dark:text-gray-400">

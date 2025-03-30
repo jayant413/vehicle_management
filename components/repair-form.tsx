@@ -28,7 +28,7 @@ const formSchema = z.object({
   repairDate: z.string().min(1, { message: "Repair date is required" }),
   amount: z.coerce
     .number()
-    .positive({ message: "Quantity must be a positive number" }),
+    .positive({ message: "Amount must be a positive number" }),
   toolName: z
     .string()
     .min(2, { message: "Tool name must be at least 2 characters" }),
@@ -171,12 +171,12 @@ export default function RepairForm({ vehicleId, repair }: RepairFormProps) {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity</FormLabel>
+                  <FormLabel>Amount</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="Enter quantity"
+                      placeholder="Enter amount"
                       {...field}
                     />
                   </FormControl>

@@ -1,39 +1,33 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { auth } from "@clerk/nextjs/server";
+import { getVehicles } from "@/lib/vehicle-service";
 
-export async function GET(request: Request) {
-  let { userId } = await auth();
+export async function GET() {
+  try {
+    let { userId } = await auth();
 
-  if (!userId) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
-  if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
-    userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
-  }
-
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-
-  const { db } = await connectToDatabase();
-
-  if (id) {
-    if (!ObjectId.isValid(id)) {
-      return new NextResponse("Invalid ID", { status: 400 });
+    if (!userId) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-    const vehicle = await db
-      .collection("vehicles")
-      .findOne({ _id: new ObjectId(id) });
-    return NextResponse.json(vehicle);
+
+    // if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
+    //   userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
+    // }
+
+    const vehicles = await getVehicles(userId);
+
+    return NextResponse.json(vehicles);
+  } catch (error) {
+    console.error("Error fetching vehicles:", error);
+    return new NextResponse(
+      JSON.stringify({ error: "Internal Server Error" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
-
-  const vehicles = await db
-    .collection("vehicles")
-    .find({ userId })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  return NextResponse.json(vehicles);
 }

@@ -30,7 +30,7 @@ const formSchema = z.object({
     .min(2, { message: "Vehicle name must be at least 2 characters" }),
   ownerName: z
     .string()
-    .min(2, { message: "Driver name must be at least 2 characters" }),
+    .min(2, { message: "Owner name must be at least 2 characters" }),
   vehicleNumber: z.string().min(2, { message: "Vehicle number is required" }),
 });
 
@@ -96,6 +96,8 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
             body: formData,
           }
         );
+
+        console.log(response);
 
         if (!response.ok) {
           throw new Error("Failed to upload image");
@@ -165,9 +167,9 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
               name="ownerName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Driver Name</FormLabel>
+                  <FormLabel>Owner Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter driver name" {...field} />
+                    <Input placeholder="Enter owner name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,17 +1,23 @@
-"use client";
+import { connectToDatabase } from "./mongodb"
+import { ObjectId } from "mongodb"
 
 export async function getRepairsByVehicleId(vehicleId: string) {
-  const response = await fetch(`/api/repairs?vehicleId=${vehicleId}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch repairs");
+  const { db } = await connectToDatabase()
+
+  if (!ObjectId.isValid(vehicleId)) {
+    return []
   }
-  return response.json();
+
+  return db.collection("repairs").find({ vehicleId }).sort({ repairDate: -1 }).toArray()
 }
 
 export async function getRepairById(id: string) {
-  const response = await fetch(`/api/repairs?id=${id}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch repair");
+  const { db } = await connectToDatabase()
+
+  if (!ObjectId.isValid(id)) {
+    return null
   }
-  return response.json();
+
+  return db.collection("repairs").findOne({ _id: new ObjectId(id) })
 }
+

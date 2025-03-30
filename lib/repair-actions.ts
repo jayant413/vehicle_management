@@ -13,17 +13,6 @@ interface RepairData {
   toolImageUrl: string;
 }
 
-interface Repair {
-  _id: string;
-  vehicleId: string;
-  repairDate: string;
-  amount: number;
-  toolName: string;
-  toolImageUrl: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export async function createRepair(data: RepairData) {
   const { userId } = await auth();
 
@@ -158,53 +147,4 @@ export async function deleteRepair(id: string) {
   revalidatePath(`/vehicle/${repair.vehicleId}`);
 
   return { success: true };
-}
-
-export async function getRepairsByVehicleId(
-  vehicleId: string
-): Promise<Repair[]> {
-  let { userId } = await auth();
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
-  if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
-    userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
-  }
-
-  const { db } = await connectToDatabase();
-
-  if (!ObjectId.isValid(vehicleId)) {
-    throw new Error("Invalid vehicle ID");
-  }
-
-  const vehicle = await db.collection("vehicles").findOne({
-    _id: new ObjectId(vehicleId),
-  });
-
-  if (!vehicle) {
-    throw new Error("Vehicle not found");
-  }
-
-  if (vehicle.userId !== userId) {
-    throw new Error("Unauthorized");
-  }
-
-  const repairs = await db
-    .collection("repairs")
-    .find({ vehicleId })
-    .sort({ repairDate: -1 })
-    .toArray();
-
-  return repairs.map((repair) => ({
-    _id: repair._id.toString(),
-    vehicleId: repair.vehicleId.toString(),
-    repairDate: repair.repairDate,
-    amount: repair.amount,
-    toolName: repair.toolName,
-    toolImageUrl: repair.toolImageUrl,
-    createdAt: repair.createdAt.toISOString(),
-    updatedAt: repair.updatedAt.toISOString(),
-  }));
 }

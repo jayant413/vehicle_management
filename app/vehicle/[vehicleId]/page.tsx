@@ -1,63 +1,73 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { useParams, useRouter } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
+import { redirect, useParams } from "next/navigation";
 import { getVehicleById } from "@/lib/vehicle-service";
-import VehicleDetails, {
-  VehicleDetailsProps,
-} from "@/components/vehicle-details";
+import VehicleDetails from "@/components/vehicle-details";
 import RepairList from "@/components/repair-list";
+import DriverDetails from "@/components/driver-details";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
+import { Vehicle } from "@/lib/types";
 
 export default function VehicleDetailPage() {
-  const { isSignedIn, userId } = useAuth();
-  const params = useParams();
-  const router = useRouter();
-  const [vehicle, setVehicle] = useState<any>(null);
+  const { vehicleId } = useParams();
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
-    }
-
-    const fetchVehicle = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getVehicleById(params.vehicleId as string);
-        if (!data) {
-          router.push("/");
+        // Check auth
+        const response = await fetch("/api/auth/check");
+        const authData = await response.json();
+
+        if (!authData.authenticated) {
+          redirect("/sign-in");
           return;
         }
-        if (
-          data.userId !== userId &&
-          userId !== "user_2pnrUDsmUR76VFUEMJbTgfv6R1F"
-        ) {
-          router.push("/");
+
+        // Fetch vehicle
+        const vehicleResponse = await fetch(`/api/vehicles/${vehicleId}`);
+        if (!vehicleResponse.ok) {
+          if (vehicleResponse.status === 404) {
+            setError("Vehicle Not Found");
+          } else if (vehicleResponse.status === 403) {
+            redirect("/");
+          } else {
+            throw new Error("Failed to fetch vehicle");
+          }
           return;
         }
-        setVehicle(data);
-      } catch (error) {
-        console.error("Error fetching vehicle:", error);
-        router.push("/");
+
+        const vehicleData = await vehicleResponse.json();
+        setVehicle(vehicleData);
+      } catch (err) {
+        console.error("Error:", err);
+        setError("An error occurred");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchVehicle();
-  }, [isSignedIn, userId, params.vehicleId, router]);
+    if (vehicleId) {
+      fetchData();
+    }
+  }, [vehicleId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="container mx-auto py-10 px-4">Loading...</div>;
   }
 
-  if (!vehicle) {
+  if (error || !vehicle) {
     return (
       <div className="container mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold mb-8">Vehicle Not Found</h1>
+        <h1 className="text-3xl font-bold mb-8">
+          {error || "Vehicle Not Found"}
+        </h1>
         <Link href="/">
           <Button>Back to Vehicles</Button>
         </Link>
@@ -73,19 +83,29 @@ export default function VehicleDetailPage() {
             Back to Vehicles
           </Button>
         </Link>
-        <VehicleDetails
-          vehicle={vehicle as unknown as VehicleDetailsProps["vehicle"]}
-        />
+        <VehicleDetails />
       </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Repair History</h2>
-        <Link href={`/vehicle/${params.vehicleId}/add-repair`}>
-          <Button>Add Repair Details</Button>
-        </Link>
-      </div>
+      <Tabs defaultValue="driver" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="driver">Driver Details</TabsTrigger>
+          <TabsTrigger value="repairs">Repair History</TabsTrigger>
+        </TabsList>
 
-      <RepairList vehicleId={params.vehicleId as string} />
+        <TabsContent value="driver" className="mt-6">
+          <DriverDetails />
+        </TabsContent>
+
+        <TabsContent value="repairs" className="mt-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Repair History</h2>
+            <Link href={`/vehicle/${vehicleId}/add-repair`}>
+              <Button>Add Repair Details</Button>
+            </Link>
+          </div>
+          <RepairList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

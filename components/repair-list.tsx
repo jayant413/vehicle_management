@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { deleteRepair, getRepairsByVehicleId } from "@/lib/repair-actions";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { deleteRepair } from "@/lib/repair-actions";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -23,11 +23,14 @@ interface Repair {
   amount: number;
   toolName: string;
   toolImageUrl: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
-export default function RepairList({ vehicleId }: { vehicleId: string }) {
+export default function RepairList() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const vehicleId =
+    (params.vehicleId as string) || searchParams.get("vehicleId") || "";
+
   const [repairs, setRepairs] = useState<Repair[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -35,8 +38,17 @@ export default function RepairList({ vehicleId }: { vehicleId: string }) {
 
   useEffect(() => {
     async function fetchRepairs() {
+      if (!vehicleId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await getRepairsByVehicleId(vehicleId);
+        const response = await fetch(`/api/vehicles/${vehicleId}/repairs`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch repairs");
+        }
+        const data = await response.json();
         setRepairs(data);
       } catch (error) {
         console.error("Error fetching repairs:", error);
@@ -77,6 +89,10 @@ export default function RepairList({ vehicleId }: { vehicleId: string }) {
     return <div className="text-center py-10">Loading repair history...</div>;
   }
 
+  if (!vehicleId) {
+    return <div className="text-center py-10">No vehicle selected</div>;
+  }
+
   if (repairs.length === 0) {
     return (
       <div className="text-center py-10">
@@ -97,7 +113,7 @@ export default function RepairList({ vehicleId }: { vehicleId: string }) {
           <TableRow>
             <TableHead className="w-12">S.No</TableHead>
             <TableHead>Repair Date</TableHead>
-            <TableHead>Quantity</TableHead>
+            <TableHead>Amount</TableHead>
             <TableHead>Tool Name</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -109,7 +125,7 @@ export default function RepairList({ vehicleId }: { vehicleId: string }) {
               <TableCell>
                 {new Date(repair.repairDate).toLocaleDateString()}
               </TableCell>
-              <TableCell>{repair.amount}</TableCell>
+              <TableCell>${repair.amount.toFixed(2)}</TableCell>
               <TableCell>{repair.toolName}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">

@@ -1,52 +1,55 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { useParams, useRouter } from "next/navigation";
-import { getVehicleById } from "@/lib/vehicle-service";
+import { redirect, useParams } from "next/navigation";
 import VehicleForm from "@/components/vehicle-form";
+import { useEffect, useState } from "react";
+import { Vehicle } from "@/lib/types";
 
 export default function EditVehiclePage() {
-  const { isSignedIn, userId } = useAuth();
-  const params = useParams();
-  const router = useRouter();
-  const [vehicle, setVehicle] = useState<any>(null);
+  const { vehicleId } = useParams();
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
-    }
-
-    const fetchVehicle = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getVehicleById(params.vehicleId as string);
-        if (!data) {
-          router.push("/");
+        // Check auth
+        const authResponse = await fetch("/api/auth/check");
+        const authData = await authResponse.json();
+
+        if (!authData.authenticated) {
+          redirect("/sign-in");
           return;
         }
-        if (data.userId !== userId) {
-          router.push("/");
+
+        // Fetch vehicle
+        const vehicleResponse = await fetch(`/api/vehicles/${vehicleId}`);
+        if (!vehicleResponse.ok) {
+          redirect("/");
           return;
         }
-        setVehicle(data);
-      } catch (error) {
-        console.error("Error fetching vehicle:", error);
-        router.push("/");
+
+        const vehicleData = await vehicleResponse.json();
+        setVehicle(vehicleData);
+      } catch (err) {
+        console.error("Error:", err);
+        redirect("/");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchVehicle();
-  }, [isSignedIn, userId, params.vehicleId, router]);
+    if (vehicleId) {
+      fetchData();
+    }
+  }, [vehicleId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="container mx-auto py-10 px-4">Loading...</div>;
   }
 
   if (!vehicle) {
+    redirect("/");
     return null;
   }
 

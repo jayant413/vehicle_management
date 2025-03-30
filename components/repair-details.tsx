@@ -1,21 +1,71 @@
+"use client";
+
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
-export interface RepairDetailsProps {
-  repair: {
-    _id: string;
-    vehicleId: string;
-    repairDate: string;
-    amount: number;
-    toolName: string;
-    toolImageUrl: string;
-  };
+interface Repair {
+  _id: string;
+  vehicleId: string;
+  repairDate: string;
+  amount: number;
+  toolName: string;
+  toolImageUrl: string;
 }
 
-export default function RepairDetails({ repair }: RepairDetailsProps) {
+export default function RepairDetails({
+  repair: propRepair,
+}: {
+  repair?: Repair;
+}) {
+  const { repairId } = useParams();
+  const [repair, setRepair] = useState<Repair | null>(propRepair || null);
+  const [loading, setLoading] = useState(!propRepair);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchRepair() {
+      if (propRepair) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/repairs/${repairId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch repair");
+        }
+        const data = await response.json();
+        setRepair(data);
+      } catch (error) {
+        console.error("Error fetching repair:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load repair details",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (repairId && !propRepair) {
+      fetchRepair();
+    }
+  }, [repairId, propRepair, toast]);
+
+  if (loading) {
+    return <div>Loading repair details...</div>;
+  }
+
+  if (!repair) {
+    return <div>Repair details not found</div>;
+  }
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -56,9 +106,9 @@ export default function RepairDetails({ repair }: RepairDetailsProps) {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Quantity
+                    Amount
                   </p>
-                  <p className="font-medium">{repair.amount}</p>
+                  <p className="font-medium">${repair.amount.toFixed(2)}</p>
                 </div>
               </div>
               <div>
