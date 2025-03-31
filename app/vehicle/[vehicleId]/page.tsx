@@ -1,6 +1,6 @@
 "use client";
 
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import VehicleDetails from "@/components/vehicle-details";
 import RepairList from "@/components/repair-list";
 import DriverDetails from "@/components/driver-details";
@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
 
 export default function VehicleDetailPage() {
-  const searchParams = useSearchParams();
-  const vehicleId = searchParams.get("vehicleId");
+  const params = useParams();
+  const vehicleId = params.vehicleId as string;
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export default function VehicleDetailPage() {
         <TabsContent value="repairs" className="mt-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Repair History</h2>
-            <Link href={`/vehicle/add-repair?vehicleId=${vehicleId}`}>
+            <Link href={`/vehicle/${vehicleId}/add-repair`}>
               <Button>Add Repair Details</Button>
             </Link>
           </div>

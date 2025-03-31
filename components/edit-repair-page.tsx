@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import RepairForm from "@/components/repair-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Repair } from "@/lib/types";
 
 export default function EditRepairPage() {
-  const searchParams = useSearchParams();
-  const repairId = searchParams.get("repairId");
+  const params = useParams();
+  const repairId = params.repairId as string;
   const [repair, setRepair] = useState<Repair | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +67,7 @@ export default function EditRepairPage() {
 
   return (
     <div className="container mx-auto py-10 px-4">
-      <Link href={`/repair?repairId=${repairId}`}>
+      <Link href={`/repair/${repairId}`}>
         <Button variant="outline" className="mb-4">
           Back to Repair Details
         </Button>

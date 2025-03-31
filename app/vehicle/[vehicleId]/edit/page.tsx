@@ -1,13 +1,13 @@
 "use client";
 
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import VehicleForm from "@/components/vehicle-form";
 import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
 
 export default function EditVehiclePage() {
-  const searchParams = useSearchParams();
-  const vehicleId = searchParams.get("vehicleId");
+  const params = useParams();
+  const vehicleId = params.vehicleId as string;
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
 

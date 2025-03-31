@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Driver, DriverItem, Vehicle } from "@/lib/types";
 import Image from "next/image";
 import { Plus, Pencil, Trash2, UserX } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -40,8 +40,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function DriverDetails() {
-  const searchParams = useSearchParams();
-  const vehicleId = searchParams.get("vehicleId");
+  const params = useParams();
+  const vehicleId = params.vehicleId as string;
   const router = useRouter();
   const { toast } = useToast();
   const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);

@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,8 +23,8 @@ export default function RepairDetails({
 }: {
   repair?: Repair;
 }) {
-  const searchParams = useSearchParams();
-  const repairId = searchParams.get("repairId");
+  const params = useParams();
+  const repairId = params.repairId as string;
   const [repair, setRepair] = useState<Repair | null>(propRepair || null);
   const [loading, setLoading] = useState(!propRepair);
   const { toast } = useToast();
@@ -84,7 +84,7 @@ export default function RepairDetails({
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h2 className="text-2xl font-bold mb-4">Repair Details</h2>
-              <Link href={`/repair/edit?repairId=${repair._id}`}>
+              <Link href={`/repair/${repair._id}/edit`}>
                 <Button
                   variant="outline"
                   size="sm"

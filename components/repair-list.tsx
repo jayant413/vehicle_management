@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { deleteRepair } from "@/lib/repair-actions";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -26,8 +26,8 @@ interface Repair {
 }
 
 export default function RepairList() {
-  const searchParams = useSearchParams();
-  const vehicleId = searchParams.get("vehicleId");
+  const params = useParams();
+  const vehicleId = params.vehicleId as string;
   const [repairs, setRepairs] = useState<Repair[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -96,7 +96,7 @@ export default function RepairList() {
         <p className="mb-4">
           No repair records found. Add your first repair record!
         </p>
-        <Link href={`/vehicle/add-repair?vehicleId=${vehicleId}`}>
+        <Link href={`/vehicle/${vehicleId}/add-repair`}>
           <Button>Add Repair Details</Button>
         </Link>
       </div>
@@ -126,12 +126,12 @@ export default function RepairList() {
               <TableCell>{repair.toolName}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Link href={`/repair?repairId=${repair._id}`}>
+                  <Link href={`/repair/${repair._id}`}>
                     <Button variant="outline" size="icon">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href={`/repair/edit?repairId=${repair._id}`}>
+                  <Link href={`/repair/${repair._id}/edit`}>
                     <Button variant="outline" size="icon">
                       <Pencil className="h-4 w-4" />
                     </Button>

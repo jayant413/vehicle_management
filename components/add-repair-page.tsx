@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import RepairForm from "@/components/repair-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Vehicle } from "@/lib/types";
 
 export default function AddRepairPage() {
-  const searchParams = useSearchParams();
-  const vehicleId = searchParams.get("vehicleId");
+  const params = useParams();
+  const vehicleId = params.vehicleId as string;
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +69,7 @@ export default function AddRepairPage() {
 
   return (
     <div className="container mx-auto py-10 px-4">
-      <Link href={`/vehicle?vehicleId=${vehicleId}`}>
+      <Link href={`/vehicle/${vehicleId}`}>
         <Button variant="outline" className="mb-4">
           Back to Vehicle
         </Button>

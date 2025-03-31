@@ -5,13 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
 
 export default function VehicleDetails() {
-  const searchParams = useSearchParams();
-  const vehicleId = searchParams.get("vehicleId");
+  const params = useParams();
+  const vehicleId = params.vehicleId as string;
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -59,7 +59,7 @@ export default function VehicleDetails() {
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h2 className="text-2xl font-bold mb-4">{vehicle.name}</h2>
-              <Link href={`/vehicle/edit?vehicleId=${vehicle._id}`}>
+              <Link href={`/vehicle/${vehicle._id}/edit`}>
                 <Button
                   variant="outline"
                   size="sm"
