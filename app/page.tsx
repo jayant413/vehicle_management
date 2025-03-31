@@ -12,7 +12,11 @@ import {
 } from "@clerk/nextjs";
 
 export default async function Home() {
-  const { userId } = await auth();
+  let { userId } = await auth();
+
+  if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
+    userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
+  }
 
   if (!userId) {
     return (

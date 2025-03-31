@@ -1,37 +1,68 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { auth } from "@clerk/nextjs/server";
+import { getRepairById } from "@/lib/repair-service";
+import { getVehicleById } from "@/lib/vehicle-service";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const repairId = searchParams.get("repairId");
     const vehicleId = searchParams.get("vehicleId");
-    const id = searchParams.get("id");
 
-    const { db } = await connectToDatabase();
-    const repairs = db.collection("repairs");
+    if (repairId) {
+      let { userId } = await auth();
 
-    if (vehicleId) {
-      // Get repairs by vehicle ID
-      const vehicleRepairs = await repairs
-        .find({ vehicleId: vehicleId })
-        .toArray();
-      return NextResponse.json(vehicleRepairs);
-    }
+      if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
+        userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
+      }
+      if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
-    if (id) {
-      // Get repair by ID
-      const repair = await repairs.findOne({ _id: new ObjectId(id) });
+      const repair = await getRepairById(repairId);
       if (!repair) {
         return NextResponse.json(
           { error: "Repair not found" },
           { status: 404 }
         );
       }
+
+      const vehicle = await getVehicleById(repair.vehicleId);
+      if (!vehicle || vehicle.userId !== userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
+
       return NextResponse.json(repair);
     }
 
+    if (vehicleId) {
+      let { userId } = await auth();
+
+      if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
+        userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
+      }
+      if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const vehicle = await getVehicleById(vehicleId);
+      if (!vehicle || vehicle.userId !== userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
+
+      const { db } = await connectToDatabase();
+      const repairs = db.collection("repairs");
+      const vehicleRepairs = await repairs
+        .find({ vehicleId: vehicleId })
+        .toArray();
+      return NextResponse.json(vehicleRepairs);
+    }
+
     // If no parameters provided, return all repairs
+    const { db } = await connectToDatabase();
+    const repairs = db.collection("repairs");
     const allRepairs = await repairs.find({}).toArray();
     return NextResponse.json(allRepairs);
   } catch (error) {

@@ -23,14 +23,13 @@ import { useToast } from "@/hooks/use-toast";
 import { createVehicle, updateVehicle } from "@/lib/vehicle-actions";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
+import { handleFileChange } from "@/lib/file-utils";
 
 const formSchema = z.object({
   name: z
     .string()
     .min(2, { message: "Vehicle name must be at least 2 characters" }),
-  ownerName: z
-    .string()
-    .min(2, { message: "Owner name must be at least 2 characters" }),
+  ownerName: z.string().optional(),
   vehicleNumber: z.string().min(2, { message: "Vehicle number is required" }),
 });
 
@@ -63,15 +62,7 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    handleFileChange(e, setImageFile, setImagePreview);
   };
 
   const clearImage = () => {
@@ -119,7 +110,7 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
         });
       } else {
         // Create new vehicle
-        const newVehicle = await createVehicle({
+        await createVehicle({
           ...values,
           imageUrl,
         });
@@ -162,20 +153,21 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="ownerName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Owner Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter owner name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            <div className="hidden">
+              <FormField
+                control={form.control}
+                name="ownerName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Driver Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter driver name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="vehicleNumber"

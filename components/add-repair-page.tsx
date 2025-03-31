@@ -1,18 +1,20 @@
 "use client";
 
-import { redirect, useSearchParams } from "next/navigation";
-import VehicleForm from "@/components/vehicle-form";
 import { useEffect, useState } from "react";
+import { redirect, useSearchParams } from "next/navigation";
+import RepairForm from "@/components/repair-form";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Vehicle } from "@/lib/types";
 
-export default function EditVehiclePage() {
+export default function AddRepairPage() {
   const searchParams = useSearchParams();
   const vehicleId = searchParams.get("vehicleId");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         // Check auth
         const authResponse = await fetch("/api/auth/check");
@@ -20,6 +22,11 @@ export default function EditVehiclePage() {
 
         if (!authData.authenticated) {
           redirect("/sign-in");
+          return;
+        }
+
+        if (!vehicleId) {
+          redirect("/");
           return;
         }
 
@@ -40,26 +47,35 @@ export default function EditVehiclePage() {
       } finally {
         setLoading(false);
       }
-    };
-
-    if (vehicleId) {
-      fetchData();
     }
+
+    fetchData();
   }, [vehicleId]);
 
   if (loading) {
     return <div className="container mx-auto py-10 px-4">Loading...</div>;
   }
 
-  if (!vehicle) {
-    redirect("/");
-    return null;
+  if (!vehicle || !vehicleId) {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <h1 className="text-3xl font-bold mb-8">Vehicle Not Found</h1>
+        <Link href="/">
+          <Button>Back to Vehicles</Button>
+        </Link>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-8">Edit Vehicle</h1>
-      <VehicleForm vehicle={vehicle} />
+      <Link href={`/vehicle?vehicleId=${vehicleId}`}>
+        <Button variant="outline" className="mb-4">
+          Back to Vehicle
+        </Button>
+      </Link>
+      <h1 className="text-3xl font-bold mb-8">Add Repair Details</h1>
+      <RepairForm vehicleId={vehicleId} />
     </div>
   );
 }

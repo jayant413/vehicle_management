@@ -1,8 +1,6 @@
 "use client";
 
-import { auth } from "@clerk/nextjs/server";
-import { redirect, useParams } from "next/navigation";
-import { getVehicleById } from "@/lib/vehicle-service";
+import { redirect, useSearchParams } from "next/navigation";
 import VehicleDetails from "@/components/vehicle-details";
 import RepairList from "@/components/repair-list";
 import DriverDetails from "@/components/driver-details";
@@ -13,7 +11,8 @@ import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
 
 export default function VehicleDetailPage() {
-  const { vehicleId } = useParams();
+  const searchParams = useSearchParams();
+  const vehicleId = searchParams.get("vehicleId");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +30,9 @@ export default function VehicleDetailPage() {
         }
 
         // Fetch vehicle
-        const vehicleResponse = await fetch(`/api/vehicles/${vehicleId}`);
+        const vehicleResponse = await fetch(
+          `/api/vehicles?vehicleId=${vehicleId}`
+        );
         if (!vehicleResponse.ok) {
           if (vehicleResponse.status === 404) {
             setError("Vehicle Not Found");
@@ -99,7 +100,7 @@ export default function VehicleDetailPage() {
         <TabsContent value="repairs" className="mt-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Repair History</h2>
-            <Link href={`/vehicle/${vehicleId}/add-repair`}>
+            <Link href={`/vehicle/add-repair?vehicleId=${vehicleId}`}>
               <Button>Add Repair Details</Button>
             </Link>
           </div>

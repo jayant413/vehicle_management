@@ -22,6 +22,7 @@ import { Upload, X } from "lucide-react";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { addDriver, updateDriver } from "@/lib/driver-actions";
+import { handleFileChange } from "@/lib/file-utils";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -61,27 +62,11 @@ export default function DriverForm({
   });
 
   const handleAadharChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAadharFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAadharPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    handleFileChange(e, setAadharFile, setAadharPreview);
   };
 
   const handlePanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPanFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPanPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    handleFileChange(e, setPanFile, setPanPreview);
   };
 
   const clearAadharImage = () => {

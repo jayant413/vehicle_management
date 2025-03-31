@@ -22,6 +22,7 @@ import { Upload, X } from "lucide-react";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { addDriverItem, updateDriverItem } from "@/lib/driver-actions";
+import { handleFileChange } from "@/lib/file-utils";
 
 const formSchema = z.object({
   itemName: z
@@ -59,15 +60,7 @@ export default function ItemForm({
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    handleFileChange(e, setImageFile, setImagePreview);
   };
 
   const clearImage = () => {

@@ -5,19 +5,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
 
 export default function VehicleDetails() {
-  const { vehicleId } = useParams();
+  const searchParams = useSearchParams();
+  const vehicleId = searchParams.get("vehicleId");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchVehicle() {
       try {
-        const response = await fetch(`/api/vehicles/${vehicleId}`);
+        const response = await fetch(`/api/vehicles?vehicleId=${vehicleId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch vehicle");
         }
@@ -58,7 +59,7 @@ export default function VehicleDetails() {
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h2 className="text-2xl font-bold mb-4">{vehicle.name}</h2>
-              <Link href={`/vehicle/${vehicle._id}/edit`}>
+              <Link href={`/vehicle/edit?vehicleId=${vehicle._id}`}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -71,8 +72,8 @@ export default function VehicleDetails() {
             </div>
             <div className="space-y-2">
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-semibold">Owner:</span>{" "}
-                {vehicle.ownerName}
+                <span className="font-semibold">Driver:</span>{" "}
+                {vehicle.driver?.name}
               </p>
               <p className="text-gray-600 dark:text-gray-400">
                 <span className="font-semibold">Vehicle Number:</span>{" "}

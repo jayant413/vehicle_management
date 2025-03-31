@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,7 +23,8 @@ export default function RepairDetails({
 }: {
   repair?: Repair;
 }) {
-  const { repairId } = useParams();
+  const searchParams = useSearchParams();
+  const repairId = searchParams.get("repairId");
   const [repair, setRepair] = useState<Repair | null>(propRepair || null);
   const [loading, setLoading] = useState(!propRepair);
   const { toast } = useToast();
@@ -35,7 +36,7 @@ export default function RepairDetails({
       }
 
       try {
-        const response = await fetch(`/api/repairs/${repairId}`);
+        const response = await fetch(`/api/repairs?repairId=${repairId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch repair");
         }
@@ -83,7 +84,7 @@ export default function RepairDetails({
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h2 className="text-2xl font-bold mb-4">Repair Details</h2>
-              <Link href={`/repair/${repair._id}/edit`}>
+              <Link href={`/repair/edit?repairId=${repair._id}`}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -106,9 +107,9 @@ export default function RepairDetails({
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Amount
+                    Quantity
                   </p>
-                  <p className="font-medium">${repair.amount.toFixed(2)}</p>
+                  <p className="font-medium">{repair.amount}</p>
                 </div>
               </div>
               <div>

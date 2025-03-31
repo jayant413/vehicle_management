@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createRepair, updateRepair } from "@/lib/repair-actions";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
+import { handleFileChange } from "@/lib/file-utils";
 
 const formSchema = z.object({
   repairDate: z.string().min(1, { message: "Repair date is required" }),
@@ -67,15 +68,7 @@ export default function RepairForm({ vehicleId, repair }: RepairFormProps) {
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    handleFileChange(e, setImageFile, setImagePreview);
   };
 
   const clearImage = () => {
@@ -171,12 +164,12 @@ export default function RepairForm({ vehicleId, repair }: RepairFormProps) {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>Quantity</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="Enter amount"
+                      placeholder="Enter quantity"
                       {...field}
                     />
                   </FormControl>

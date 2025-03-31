@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Driver, DriverItem, Vehicle } from "@/lib/types";
 import Image from "next/image";
 import { Plus, Pencil, Trash2, UserX } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -40,7 +40,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function DriverDetails() {
-  const { vehicleId } = useParams();
+  const searchParams = useSearchParams();
+  const vehicleId = searchParams.get("vehicleId");
   const router = useRouter();
   const { toast } = useToast();
   const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
@@ -54,7 +55,7 @@ export default function DriverDetails() {
       try {
         if (!vehicleId) return;
 
-        const response = await fetch(`/api/vehicles/${vehicleId}`);
+        const response = await fetch(`/api/vehicles?vehicleId=${vehicleId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch vehicle");
         }
@@ -79,7 +80,7 @@ export default function DriverDetails() {
   const handleDeleteDriver = async () => {
     try {
       if (!vehicleId) return;
-      await deleteDriver(vehicleId as string);
+      await deleteDriver(vehicleId);
       toast({
         title: "Success",
         description: "Driver deleted successfully",
@@ -99,13 +100,13 @@ export default function DriverDetails() {
   const handleDeleteItem = async (itemId: string) => {
     try {
       if (!vehicleId) return;
-      await deleteDriverItem(vehicleId as string, itemId);
+      await deleteDriverItem(vehicleId, itemId);
       toast({
         title: "Success",
         description: "Item deleted successfully",
       });
       // Refresh driver data after deletion
-      const response = await fetch(`/api/vehicles/${vehicleId}`);
+      const response = await fetch(`/api/vehicles?vehicleId=${vehicleId}`);
       if (response.ok) {
         const data: Vehicle = await response.json();
         setDriver(data.driver);
@@ -153,12 +154,12 @@ export default function DriverDetails() {
                   </DialogDescription>
                 </DialogHeader>
                 <DriverForm
-                  vehicleId={vehicleId as string}
+                  vehicleId={vehicleId || ""}
                   onSuccess={() => {
                     setIsDriverDialogOpen(false);
                     const fetchUpdatedVehicle = async () => {
                       const response = await fetch(
-                        `/api/vehicles/${vehicleId}`
+                        `/api/vehicles?vehicleId=${vehicleId}`
                       );
                       if (response.ok) {
                         const data: Vehicle = await response.json();
@@ -204,13 +205,13 @@ export default function DriverDetails() {
                   </DialogDescription>
                 </DialogHeader>
                 <DriverForm
-                  vehicleId={vehicleId as string}
+                  vehicleId={vehicleId || ""}
                   driver={driver}
                   onSuccess={() => {
                     setIsDriverDialogOpen(false);
                     const fetchUpdatedVehicle = async () => {
                       const response = await fetch(
-                        `/api/vehicles/${vehicleId}`
+                        `/api/vehicles?vehicleId=${vehicleId}`
                       );
                       if (response.ok) {
                         const data: Vehicle = await response.json();
@@ -338,7 +339,7 @@ export default function DriverDetails() {
                 </DialogDescription>
               </DialogHeader>
               <ItemForm
-                vehicleId={vehicleId as string}
+                vehicleId={vehicleId || ""}
                 item={selectedItem || undefined}
                 onSuccess={() => {
                   setIsItemDialogOpen(false);
