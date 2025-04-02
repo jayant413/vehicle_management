@@ -70,18 +70,7 @@ export default function VehicleDetails() {
                     Edit
                   </Button>
                 </Link>
-                {vehicle.driver && (
-                  <Link href={`/vehicle/${vehicle._id}/driver`}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Driver Details
-                    </Button>
-                  </Link>
-                )}
+             
               </div>
             </div>
             <div className="space-y-2">

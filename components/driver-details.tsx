@@ -259,9 +259,9 @@ export default function DriverDetails() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex md:flex-row items-center justify-between">
           <CardTitle>Driver Details</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-2 md:mt-0">
             <Button
               variant="outline"
               size="sm"
