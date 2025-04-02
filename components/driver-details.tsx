@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Driver, DriverItem, Vehicle } from "@/lib/types";
 import Image from "next/image";
-import { Plus, Pencil, Trash2, UserX } from "lucide-react";
+import { Plus, Pencil, Trash2, UserX, Download } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -38,6 +38,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+// import html2canvas from "html2canvas";
 
 export default function DriverDetails() {
   const params = useParams();
@@ -49,31 +52,35 @@ export default function DriverDetails() {
   const [selectedItem, setSelectedItem] = useState<DriverItem | null>(null);
   const [driver, setDriver] = useState<Driver | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [vehicleName, setVehicleName] = useState<string>("");
+  const [vehicleNumber, setVehicleNumber] = useState<string>("");
 
-  useEffect(() => {
-    async function fetchVehicle() {
-      try {
-        if (!vehicleId) return;
+  async function fetchVehicle() {
+    try {
+      if (!vehicleId) return;
 
-        const response = await fetch(`/api/vehicles?vehicleId=${vehicleId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch vehicle");
-        }
-
-        const data: Vehicle = await response.json();
-        setDriver(data.driver);
-      } catch (error) {
-        console.error("Error fetching vehicle driver:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load driver details",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+      const response = await fetch(`/api/vehicles?vehicleId=${vehicleId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch vehicle");
       }
-    }
 
+      const data: Vehicle = await response.json();
+      setDriver(data.driver);
+      setVehicleName(data.name || "");
+      setVehicleNumber(data.vehicleNumber || "");
+    } catch (error) {
+      console.error("Error fetching vehicle driver:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load driver details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
     fetchVehicle();
   }, [vehicleId, toast]);
 
@@ -126,6 +133,78 @@ export default function DriverDetails() {
     setIsItemDialogOpen(true);
   };
 
+  const generatePDF = async () => {
+    if (!driver) return;
+
+    setGeneratingPdf(true);
+    try {
+      const pdf = new jsPDF();
+
+      // Set up PDF document properties
+      pdf.setProperties({
+        title: `Driver Details - ${driver.name}`,
+        author: "Fleet Management System",
+        subject: "Driver Details",
+        keywords: "driver, fleet, details",
+      });
+
+      // Add title
+      pdf.setFontSize(20);
+      pdf.text("Driver Details", 105, 15, { align: "center" });
+
+      // Add driver details
+      pdf.setFontSize(12);
+      pdf.text(`Name: ${driver.name}`, 20, 30);
+      pdf.text(`Phone: ${driver.phoneNumber || "N/A"}`, 20, 40);
+      pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 50);
+
+      // Add vehicle details
+      pdf.text(`Vehicle Name: ${vehicleName || "N/A"}`, 20, 60);
+      pdf.text(`Vehicle Number: ${vehicleNumber || "N/A"}`, 20, 70);
+
+      // Create table with items
+      if (driver.itemsGiven && driver.itemsGiven.length > 0) {
+        pdf.text("Items Given to Driver", 20, 85);
+
+        // Prepare table data
+        const tableColumn = ["Item Name", "Quantity", "Given Date"];
+        const tableRows = driver.itemsGiven.map((item) => [
+          item.itemName || "N/A",
+          item.quantity?.toString() || "0",
+          new Date(item.givenDate).toLocaleDateString() || "N/A",
+        ]);
+
+        // Add the table
+        autoTable(pdf, {
+          head: [tableColumn],
+          body: tableRows,
+          startY: 90,
+          theme: "striped",
+          headStyles: { fillColor: [41, 128, 185] },
+        });
+      } else {
+        pdf.text("No items given to this driver.", 20, 85);
+      }
+
+      // Save the PDF
+      pdf.save(`${driver.name}_Driver_Details.pdf`);
+
+      toast({
+        title: "Success",
+        description: "PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
   if (loading) {
     return <div>Loading driver details...</div>;
   }
@@ -146,7 +225,7 @@ export default function DriverDetails() {
               <DialogTrigger asChild>
                 <Button>Add Driver</Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add Driver</DialogTitle>
                   <DialogDescription>
@@ -183,6 +262,17 @@ export default function DriverDetails() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Driver Details</CardTitle>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={generatePDF}
+              disabled={generatingPdf}
+            >
+              <Download className="h-4 w-4" />
+              {generatingPdf ? "Generating..." : "Download PDF"}
+            </Button>
+
             <Dialog
               open={isDriverDialogOpen}
               onOpenChange={setIsDriverDialogOpen}
@@ -197,7 +287,7 @@ export default function DriverDetails() {
                   Edit
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Driver</DialogTitle>
                   <DialogDescription>
@@ -254,59 +344,79 @@ export default function DriverDetails() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col items-center mb-6">
+            {driver.driverImage ? (
+              <div className="relative h-32 w-32 rounded-full overflow-hidden border-2 border-primary mb-4">
+                <Image
+                  src={driver.driverImage}
+                  alt="Driver Photo"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
+                <span className="text-gray-400 text-2xl">No Photo</span>
+              </div>
+            )}
+            <h2 className="text-2xl font-bold">{driver.name}</h2>
+            <p className="text-lg text-gray-500">{driver.phoneNumber}</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Name
-                </h3>
-                <p className="text-lg font-semibold">{driver.name}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Phone Number
-                </h3>
-                <p className="text-lg font-semibold">{driver.phoneNumber}</p>
-              </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                Aadhar Card
+              </h3>
+              {driver.aadharImage ? (
+                <div className="relative h-32 w-full border rounded-md overflow-hidden">
+                  <Image
+                    src={driver.aadharImage}
+                    alt="Aadhar Card"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-400 italic">No image uploaded</p>
+              )}
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Aadhar Card
-                </h3>
-                {driver.aadharImage ? (
-                  <div className="relative h-32 w-full mt-2 border rounded-md overflow-hidden">
-                    <Image
-                      src={driver.aadharImage || "/placeholder.svg"}
-                      alt="Aadhar Card"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <p className="text-gray-400 italic">No image uploaded</p>
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  PAN Card
-                </h3>
-                {driver.panCardImage ? (
-                  <div className="relative h-32 w-full mt-2 border rounded-md overflow-hidden">
-                    <Image
-                      src={driver.panCardImage || "/placeholder.svg"}
-                      alt="PAN Card"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <p className="text-gray-400 italic">No image uploaded</p>
-                )}
-              </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                PAN Card
+              </h3>
+              {driver.panCardImage ? (
+                <div className="relative h-32 w-full border rounded-md overflow-hidden">
+                  <Image
+                    src={driver.panCardImage}
+                    alt="PAN Card"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-400 italic">No image uploaded</p>
+              )}
             </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+              License
+            </h3>
+            {driver.licenseImage ? (
+              <div className="relative h-40 w-full border rounded-md overflow-hidden">
+                <Image
+                  src={driver.licenseImage}
+                  alt="Driver License"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <p className="text-gray-400 italic">No license uploaded</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -327,7 +437,7 @@ export default function DriverDetails() {
                 Add Item
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {selectedItem ? "Edit Item" : "Add Item"}
@@ -344,6 +454,7 @@ export default function DriverDetails() {
                 onSuccess={() => {
                   setIsItemDialogOpen(false);
                   setSelectedItem(null);
+                  fetchVehicle();
                   router.refresh();
                 }}
               />
@@ -357,6 +468,7 @@ export default function DriverDetails() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Item Name</TableHead>
+                    <TableHead>Quantity</TableHead>
                     <TableHead>Given Date</TableHead>
                     <TableHead>Image</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -368,6 +480,7 @@ export default function DriverDetails() {
                       <TableCell className="font-medium">
                         {item.itemName}
                       </TableCell>
+                      <TableCell>{item.quantity || 0}</TableCell>
                       <TableCell>
                         {new Date(item.givenDate).toLocaleDateString()}
                       </TableCell>

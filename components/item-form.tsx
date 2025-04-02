@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,12 +24,23 @@ import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { addDriverItem, updateDriverItem } from "@/lib/driver-actions";
 import { handleFileChange } from "@/lib/file-utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   itemName: z
     .string()
     .min(2, { message: "Item name must be at least 2 characters" }),
   givenDate: z.string().min(1, { message: "Given date is required" }),
+  quantityMode: z.enum(["number", "toggle"]),
+  quantity: z.string().min(0),
+  toggleValue: z.boolean().optional(),
 });
 
 interface ItemFormProps {
@@ -49,6 +61,18 @@ export default function ItemForm({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Determine if the existing quantity is a toggle value
+  const isToggleValue =
+    item?.quantity !== undefined &&
+    (item.quantity === 0 ||
+      item.quantity === 1 ||
+      String(item.quantity) === "OK" ||
+      String(item.quantity) === "0");
+
+  const defaultQuantityMode = isToggleValue ? "toggle" : "number";
+  const defaultToggleValue =
+    item?.quantity === 1 || String(item?.quantity || "") === "OK";
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,8 +80,13 @@ export default function ItemForm({
       givenDate: item?.givenDate
         ? new Date(item.givenDate).toISOString().split("T")[0]
         : "",
+      quantityMode: defaultQuantityMode,
+      quantity: item?.quantity !== undefined ? String(item.quantity) : "0",
+      toggleValue: defaultToggleValue,
     },
   });
+
+  const watchQuantityMode = form.watch("quantityMode");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFileChange(e, setImageFile, setImagePreview);
@@ -94,9 +123,17 @@ export default function ItemForm({
         itemImageUrl = data.secure_url;
       }
 
+      // Determine the quantity value based on the mode
+      let finalQuantity: string | number = values.quantity;
+      if (values.quantityMode === "toggle") {
+        finalQuantity = values.toggleValue ? "OK" : "0";
+      }
+
+      const { quantityMode, toggleValue, ...rest } = values;
       const itemData = {
-        ...values,
+        ...rest,
         itemImage: itemImageUrl,
+        quantity: finalQuantity,
       };
 
       if (item && item._id) {
@@ -142,6 +179,70 @@ export default function ItemForm({
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="quantityMode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Quantity Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select quantity type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="number">Numeric Quantity</SelectItem>
+                  <SelectItem value="toggle">Toggle (OK/Not OK)</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {watchQuantityMode === "number" ? (
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Enter quantity"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ) : (
+          <FormField
+            control={form.control}
+            name="toggleValue"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Item Status</FormLabel>
+                  <FormDescription>
+                    {field.value ? "OK" : "Not OK"}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

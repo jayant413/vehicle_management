@@ -41,7 +41,7 @@ export async function addDriver(vehicleId: string, driverData: Driver) {
       $set: {
         driver: {
           ...driverData,
-          itemsGiven: [],
+          itemsGiven: driverData.itemsGiven || [],
         },
         updatedAt: new Date(),
       },

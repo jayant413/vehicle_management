@@ -3,12 +3,22 @@
 import { redirect, useParams } from "next/navigation";
 import VehicleDetails from "@/components/vehicle-details";
 import RepairList from "@/components/repair-list";
+import TyreList from "@/components/tyre-list";
 import DriverDetails from "@/components/driver-details";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import TyreForm from "@/components/tyre-form";
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -16,6 +26,7 @@ export default function VehicleDetailPage() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTyreDialogOpen, setIsTyreDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,6 +70,16 @@ export default function VehicleDetailPage() {
     }
   }, [vehicleId]);
 
+  const handleTyreAdded = async () => {
+    setIsTyreDialogOpen(false);
+    // Refresh page
+    const vehicleResponse = await fetch(`/api/vehicles?vehicleId=${vehicleId}`);
+    if (vehicleResponse.ok) {
+      const vehicleData = await vehicleResponse.json();
+      setVehicle(vehicleData);
+    }
+  };
+
   if (loading) {
     return <div className="container mx-auto py-10 px-4">Loading...</div>;
   }
@@ -88,9 +109,10 @@ export default function VehicleDetailPage() {
       </div>
 
       <Tabs defaultValue="driver" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="driver">Driver Details</TabsTrigger>
-          <TabsTrigger value="repairs">Repair History</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="driver">Driver</TabsTrigger>
+          <TabsTrigger value="repairs">Repair</TabsTrigger>
+          <TabsTrigger value="tyres">Tyres</TabsTrigger>
         </TabsList>
 
         <TabsContent value="driver" className="mt-6">
@@ -105,6 +127,27 @@ export default function VehicleDetailPage() {
             </Link>
           </div>
           <RepairList />
+        </TabsContent>
+
+        <TabsContent value="tyres" className="mt-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Tyre Details</h2>
+            <Dialog open={isTyreDialogOpen} onOpenChange={setIsTyreDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>Add Tyre</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add Tyre</DialogTitle>
+                  <DialogDescription>
+                    Enter details for the new tyre.
+                  </DialogDescription>
+                </DialogHeader>
+                <TyreForm vehicleId={vehicleId} onSuccess={handleTyreAdded} />
+              </DialogContent>
+            </Dialog>
+          </div>
+          <TyreList />
         </TabsContent>
       </Tabs>
     </div>
