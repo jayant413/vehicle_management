@@ -10,12 +10,14 @@ import { useRouter } from "next/navigation";
 import { deleteVehicle } from "@/lib/vehicle-actions";
 import { useToast } from "@/hooks/use-toast";
 import type { Vehicle } from "@/lib/types";
+import { Input } from "./ui/input";
 
 export default function VehicleList() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const { toast } = useToast();
+  const [search, setSearch] = useState("");
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
 
   useEffect(() => {
     async function fetchVehicles() {
@@ -40,6 +42,15 @@ export default function VehicleList() {
 
     fetchVehicles();
   }, [toast]);
+
+  useEffect(() => {
+    const filtered = vehicles.filter(
+      (vehicle) =>
+        vehicle.vehicleNumber.toLowerCase().includes(search.toLowerCase()) ||
+        vehicle.driver?.name.toLowerCase().includes(search.toLowerCase())
+    );
+    setFilteredVehicles(filtered);
+  }, [search, vehicles]);
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this vehicle?")) {
@@ -77,71 +88,83 @@ export default function VehicleList() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {vehicles.map((vehicle) => (
-        <Card key={vehicle._id} className="overflow-hidden">
-          <div className="relative h-48 w-full">
-            <Image
-              src={vehicle.imageUrl || "/placeholder.svg?height=200&width=400"}
-              alt={vehicle.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-2">{vehicle.name}</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-1">
-              <span className="font-semibold">Driver:</span>{" "}
-              {vehicle.driver?.name}
-            </p>
-            <p className="text-gray-600 dark:text-gray-400">
-              <span className="font-semibold">Vehicle Number:</span>{" "}
-              {vehicle.vehicleNumber}
-            </p>
-            {vehicle.driver && (
-              <div className="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-                <User className="h-4 w-4 mr-1" />
-                <span>Driver: {vehicle.driver.name}</span>
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex flex-wrap gap-2 p-6 pt-0">
+    <div>
+      <Input
+        placeholder="Search By Vehicle Number or Driver Name"
+        className="mb-4 w-[30em]"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredVehicles.map((vehicle) => (
+          <Card key={vehicle._id} className="overflow-hidden">
             <Link href={`/vehicle/${vehicle._id}`}>
-              <Button>View Details</Button>
+              <div className="relative h-48 w-full">
+                <Image
+                  src={
+                    vehicle.imageUrl || "/placeholder.svg?height=200&width=400"
+                  }
+                  alt={vehicle.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-bold mb-2">{vehicle.name}</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-1">
+                  <span className="font-semibold">Driver Name:</span>{" "}
+                  <span className="text-blue-600 font-semibold dark:text-gray-400">
+                    {vehicle.driver?.name || "--"}
+                  </span>
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-1">
+                  <span className="font-semibold">Driver Number:</span>{" "}
+                  {vehicle.driver?.phoneNumber || "--"}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  <span className="font-semibold">Vehicle Number:</span>{" "}
+                  {vehicle.vehicleNumber}
+                </p>
+              </CardContent>
             </Link>
-            <Link href={`/vehicle/${vehicle._id}`} className="flex-1">
-              <Button
-                variant="outline"
-                className="w-full flex items-center gap-2"
-              >
-                <User className="h-4 w-4" />
-                {vehicle.driver ? "View Driver" : "Add Driver"}
-              </Button>
-            </Link>
-            <div className="flex gap-2 mt-2 w-full">
-              <Link href={`/vehicle/${vehicle._id}/edit`} className="flex-1">
+            <CardFooter className="flex flex-wrap gap-2 p-6 pt-0">
+              <Link href={`/vehicle/${vehicle._id}`}>
+                <Button>View Details</Button>
+              </Link>
+              <Link href={`/vehicle/${vehicle._id}`} className="flex-1">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="w-full flex items-center justify-center gap-2"
+                  className="w-full flex items-center gap-2"
                 >
-                  <Pencil className="h-4 w-4" />
-                  Edit
+                  <User className="h-4 w-4" />
+                  {vehicle.driver ? "View Driver" : "Add Driver"}
                 </Button>
               </Link>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="flex-1 flex items-center justify-center gap-2"
-                onClick={() => handleDelete(vehicle._id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+              <div className="flex gap-2 mt-2 w-full">
+                <Link href={`/vehicle/${vehicle._id}/edit`} className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                </Link>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 flex items-center justify-center gap-2"
+                  onClick={() => handleDelete(vehicle._id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

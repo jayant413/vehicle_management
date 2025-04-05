@@ -4,6 +4,8 @@ export interface Vehicle {
   ownerName: string;
   vehicleNumber: string;
   imageUrl: string;
+  pucImage?: string;
+  rcImage?: string;
   userId: string;
   driver?: Driver;
   tyres?: Tyre[];
@@ -19,6 +21,11 @@ export interface Driver {
   licenseImage: string;
   driverImage: string;
   itemsGiven: DriverItem[];
+  joiningDate?: string;
+  panNumber?: string;
+  aadharNumber?: string;
+  licenseNumber?: string;
+  address?: string;
 }
 
 export interface DriverItem {

@@ -3,13 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import VehicleList from "@/components/vehicle-list";
 
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default async function Home() {
   let { userId } = await auth();

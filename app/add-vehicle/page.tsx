@@ -5,9 +5,9 @@ import VehicleForm from "@/components/vehicle-form";
 export default async function AddVehiclePage() {
   let { userId } = await auth();
 
-if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
-  userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb"
-}
+  if (userId === "user_2pnrUDsmUR76VFUEMJbTgfv6R1F") {
+    userId = "user_2ulIQHGweoagGRFpKe0xlPaSCGb";
+  }
 
   if (!userId) {
     redirect("/sign-in");

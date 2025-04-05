@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Link from "next/link";
 // import html2canvas from "html2canvas";
 
 export default function DriverDetails() {
@@ -218,38 +219,9 @@ export default function DriverDetails() {
         <CardContent className="pt-0">
           <div className="text-center py-8">
             <p className="mb-4">No driver assigned to this vehicle yet.</p>
-            <Dialog
-              open={isDriverDialogOpen}
-              onOpenChange={setIsDriverDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button>Add Driver</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add Driver</DialogTitle>
-                  <DialogDescription>
-                    Enter the driver details for this vehicle.
-                  </DialogDescription>
-                </DialogHeader>
-                <DriverForm
-                  vehicleId={vehicleId || ""}
-                  onSuccess={() => {
-                    setIsDriverDialogOpen(false);
-                    const fetchUpdatedVehicle = async () => {
-                      const response = await fetch(
-                        `/api/vehicles?vehicleId=${vehicleId}`
-                      );
-                      if (response.ok) {
-                        const data: Vehicle = await response.json();
-                        setDriver(data.driver);
-                      }
-                    };
-                    fetchUpdatedVehicle();
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+            <Link href={`/vehicle/${vehicleId}/add-driver`}>
+              <Button>Add Driver</Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -273,46 +245,16 @@ export default function DriverDetails() {
               {generatingPdf ? "Generating..." : "Download PDF"}
             </Button>
 
-            <Dialog
-              open={isDriverDialogOpen}
-              onOpenChange={setIsDriverDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Edit Driver</DialogTitle>
-                  <DialogDescription>
-                    Update the driver details for this vehicle.
-                  </DialogDescription>
-                </DialogHeader>
-                <DriverForm
-                  vehicleId={vehicleId || ""}
-                  driver={driver}
-                  onSuccess={() => {
-                    setIsDriverDialogOpen(false);
-                    const fetchUpdatedVehicle = async () => {
-                      const response = await fetch(
-                        `/api/vehicles?vehicleId=${vehicleId}`
-                      );
-                      if (response.ok) {
-                        const data: Vehicle = await response.json();
-                        setDriver(data.driver);
-                      }
-                    };
-                    fetchUpdatedVehicle();
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+            <Link href={`/vehicle/${vehicleId}/edit-driver`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -361,6 +303,38 @@ export default function DriverDetails() {
             )}
             <h2 className="text-2xl font-bold">{driver.name}</h2>
             <p className="text-lg text-gray-500">{driver.phoneNumber}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className=" md:col-span-2">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
+                <p>
+                  <span className="font-medium">Joining Date:</span>{" "}
+                  {driver.joiningDate
+                    ? new Date(driver.joiningDate).toLocaleDateString()
+                    : "Not provided"}
+                </p>
+                <p>
+                  <span className="font-medium">PAN Number:</span>{" "}
+                  {driver.panNumber || "Not provided"}
+                </p>
+                <p>
+                  <span className="font-medium">Aadhar Number:</span>{" "}
+                  {driver.aadharNumber || "Not provided"}
+                </p>
+                <p>
+                  <span className="font-medium">License Number:</span>{" "}
+                  {driver.licenseNumber || "Not provided"}
+                </p>
+                <p>
+                  <span className="font-medium">Address:</span>{" "}
+                  {driver.address || "Not provided"}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

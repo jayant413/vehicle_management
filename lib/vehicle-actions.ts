@@ -10,6 +10,8 @@ interface VehicleData {
   ownerName?: string;
   vehicleNumber: string;
   imageUrl: string;
+  pucImage?: string;
+  rcImage?: string;
 }
 
 export async function createVehicle(data: VehicleData) {

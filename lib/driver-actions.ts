@@ -42,6 +42,11 @@ export async function addDriver(vehicleId: string, driverData: Driver) {
         driver: {
           ...driverData,
           itemsGiven: driverData.itemsGiven || [],
+          joiningDate: driverData.joiningDate || "",
+          panNumber: driverData.panNumber || "",
+          aadharNumber: driverData.aadharNumber || "",
+          licenseNumber: driverData.licenseNumber || "",
+          address: driverData.address || "",
         },
         updatedAt: new Date(),
       },
@@ -92,6 +97,14 @@ export async function updateDriver(vehicleId: string, driverData: Driver) {
         driver: {
           ...driverData,
           itemsGiven: existingItems,
+          joiningDate:
+            driverData.joiningDate || vehicle.driver?.joiningDate || "",
+          panNumber: driverData.panNumber || vehicle.driver?.panNumber || "",
+          aadharNumber:
+            driverData.aadharNumber || vehicle.driver?.aadharNumber || "",
+          licenseNumber:
+            driverData.licenseNumber || vehicle.driver?.licenseNumber || "",
+          address: driverData.address || vehicle.driver?.address || "",
         },
         updatedAt: new Date(),
       },

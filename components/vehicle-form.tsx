@@ -24,6 +24,7 @@ import { createVehicle, updateVehicle } from "@/lib/vehicle-actions";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
 import { handleFileChange } from "@/lib/file-utils";
+import { Vehicle } from "@/lib/types";
 
 const formSchema = z.object({
   name: z
@@ -33,22 +34,20 @@ const formSchema = z.object({
   vehicleNumber: z.string().min(2, { message: "Vehicle number is required" }),
 });
 
-interface VehicleFormProps {
-  vehicle?: {
-    _id: string;
-    name: string;
-    ownerName: string;
-    vehicleNumber: string;
-    imageUrl: string;
-  };
-}
-
-export default function VehicleForm({ vehicle }: VehicleFormProps) {
+export default function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
   const router = useRouter();
   const { toast } = useToast();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
     vehicle?.imageUrl || null
+  );
+  const [pucFile, setPucFile] = useState<File | null>(null);
+  const [pucPreview, setPucPreview] = useState<string | null>(
+    vehicle?.pucImage || null
+  );
+  const [rcFile, setRcFile] = useState<File | null>(null);
+  const [rcPreview, setRcPreview] = useState<string | null>(
+    vehicle?.rcImage || null
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,15 +64,35 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
     handleFileChange(e, setImageFile, setImagePreview);
   };
 
+  const handlePucChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileChange(e, setPucFile, setPucPreview);
+  };
+
+  const handleRcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileChange(e, setRcFile, setRcPreview);
+  };
+
   const clearImage = () => {
     setImageFile(null);
     setImagePreview(null);
+  };
+
+  const clearPucImage = () => {
+    setPucFile(null);
+    setPucPreview(null);
+  };
+
+  const clearRcImage = () => {
+    setRcFile(null);
+    setRcPreview(null);
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
       let imageUrl = vehicle?.imageUrl || "";
+      let pucImageUrl = vehicle?.pucImage || "";
+      let rcImageUrl = vehicle?.rcImage || "";
 
       if (imageFile) {
         const formData = new FormData();
@@ -98,11 +117,55 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
         imageUrl = data.secure_url;
       }
 
+      if (pucFile) {
+        const formData = new FormData();
+        formData.append("file", pucFile);
+        formData.append("upload_preset", "feetTrack");
+
+        const response = await fetch(
+          "https://api.cloudinary.com/v1_1/dsmcoe91p/image/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload PUC image");
+        }
+
+        const data = await response.json();
+        pucImageUrl = data.secure_url;
+      }
+
+      if (rcFile) {
+        const formData = new FormData();
+        formData.append("file", rcFile);
+        formData.append("upload_preset", "feetTrack");
+
+        const response = await fetch(
+          "https://api.cloudinary.com/v1_1/dsmcoe91p/image/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload RC image");
+        }
+
+        const data = await response.json();
+        rcImageUrl = data.secure_url;
+      }
+
       if (vehicle) {
         // Update existing vehicle
         await updateVehicle(vehicle._id, {
           ...values,
           imageUrl: imageUrl || vehicle.imageUrl,
+          pucImage: pucImageUrl || vehicle.pucImage,
+          rcImage: rcImageUrl || vehicle.rcImage,
         });
         toast({
           title: "Success",
@@ -113,6 +176,8 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
         await createVehicle({
           ...values,
           imageUrl,
+          pucImage: pucImageUrl,
+          rcImage: rcImageUrl,
         });
         toast({
           title: "Success",
@@ -217,6 +282,90 @@ export default function VehicleForm({ vehicle }: VehicleFormProps) {
                   <Image
                     src={imagePreview || "/placeholder.svg"}
                     alt="Vehicle preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pucImage">PUC Image</Label>
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById("pucImage")?.click()}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {pucPreview ? "Change Image" : "Upload Image"}
+                </Button>
+                <Input
+                  id="pucImage"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePucChange}
+                />
+                {pucPreview && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={clearPucImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {pucPreview && (
+                <div className="relative h-48 w-full mt-4 border rounded-md overflow-hidden">
+                  <Image
+                    src={pucPreview || "/placeholder.svg"}
+                    alt="PUC preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="rcImage">RC Image</Label>
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById("rcImage")?.click()}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {rcPreview ? "Change Image" : "Upload Image"}
+                </Button>
+                <Input
+                  id="rcImage"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleRcChange}
+                />
+                {rcPreview && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={clearRcImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {rcPreview && (
+                <div className="relative h-48 w-full mt-4 border rounded-md overflow-hidden">
+                  <Image
+                    src={rcPreview || "/placeholder.svg"}
+                    alt="RC preview"
                     fill
                     className="object-cover"
                   />

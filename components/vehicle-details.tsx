@@ -70,7 +70,6 @@ export default function VehicleDetails() {
                     Edit
                   </Button>
                 </Link>
-             
               </div>
             </div>
             <div className="space-y-2">
@@ -79,11 +78,46 @@ export default function VehicleDetails() {
                 {vehicle.driver?.name || "No driver assigned"}
               </p>
               <p className="text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">Driver Number:</span>{" "}
+                {vehicle.driver?.phoneNumber || "No driver assigned"}
+              </p>
+              <p className="text-gray-600 dark:text-gray-400">
                 <span className="font-semibold">Vehicle Number:</span>{" "}
                 {vehicle.vehicleNumber}
               </p>
             </div>
           </div>
+        </div>
+
+        {/* PUC and RC Images */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {vehicle.pucImage && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">PUC Image</h3>
+              <div className="relative h-64 w-full rounded-md overflow-hidden border">
+                <Image
+                  src={vehicle.pucImage}
+                  alt="PUC"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          )}
+
+          {vehicle.rcImage && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">RC Image</h3>
+              <div className="relative h-64 w-full rounded-md overflow-hidden border">
+                <Image
+                  src={vehicle.rcImage}
+                  alt="RC"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -29,6 +29,11 @@ const formSchema = z.object({
   phoneNumber: z
     .string()
     .min(10, { message: "Please enter a valid phone number" }),
+  joiningDate: z.string().optional(),
+  panNumber: z.string().optional(),
+  aadharNumber: z.string().optional(),
+  licenseNumber: z.string().optional(),
+  address: z.string().optional(),
 });
 
 // Default inventory items from the logistics form
@@ -97,6 +102,11 @@ export default function DriverForm({
     defaultValues: {
       name: driver?.name || "",
       phoneNumber: driver?.phoneNumber || "",
+      joiningDate: driver?.joiningDate || "",
+      panNumber: driver?.panNumber || "",
+      aadharNumber: driver?.aadharNumber || "",
+      licenseNumber: driver?.licenseNumber || "",
+      address: driver?.address || "",
     },
   });
 
@@ -275,201 +285,276 @@ export default function DriverForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Driver Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter driver name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-3 w-full">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Driver Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter driver name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="phoneNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter phone number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter phone number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <div className="space-y-2">
-          <Label htmlFor="driverImage">Driver Photo</Label>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById("driverImage")?.click()}
-              className="flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              {driverPhotoPreview ? "Change Image" : "Upload Image"}
-            </Button>
-            <Input
-              id="driverImage"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleDriverPhotoChange}
-            />
+          <FormField
+            control={form.control}
+            name="joiningDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Joining Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="panNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>PAN Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter PAN number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="aadharNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Aadhar Card Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter Aadhar card number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="licenseNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Driving License Number</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter driving license number"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter address" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="driverImage">Driver Photo</Label>
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("driverImage")?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                {driverPhotoPreview ? "Change Image" : "Upload Image"}
+              </Button>
+              <Input
+                id="driverImage"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleDriverPhotoChange}
+              />
+              {driverPhotoPreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={clearDriverPhotoImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             {driverPhotoPreview && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={clearDriverPhotoImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
+                <Image
+                  src={driverPhotoPreview || "/placeholder.svg"}
+                  alt="Driver photo preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             )}
           </div>
-          {driverPhotoPreview && (
-            <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
-              <Image
-                src={driverPhotoPreview || "/placeholder.svg"}
-                alt="Driver photo preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="aadharImage">Aadhar Card Image</Label>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById("aadharImage")?.click()}
-              className="flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              {aadharPreview ? "Change Image" : "Upload Image"}
-            </Button>
-            <Input
-              id="aadharImage"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAadharChange}
-            />
+          <div className="space-y-2">
+            <Label htmlFor="aadharImage">Aadhar Card Image</Label>
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("aadharImage")?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                {aadharPreview ? "Change Image" : "Upload Image"}
+              </Button>
+              <Input
+                id="aadharImage"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAadharChange}
+              />
+              {aadharPreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={clearAadharImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             {aadharPreview && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={clearAadharImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
+                <Image
+                  src={aadharPreview || "/placeholder.svg"}
+                  alt="Aadhar preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             )}
           </div>
-          {aadharPreview && (
-            <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
-              <Image
-                src={aadharPreview || "/placeholder.svg"}
-                alt="Aadhar preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="panImage">PAN Card Image</Label>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById("panImage")?.click()}
-              className="flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              {panPreview ? "Change Image" : "Upload Image"}
-            </Button>
-            <Input
-              id="panImage"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handlePanChange}
-            />
+          <div className="space-y-2">
+            <Label htmlFor="panImage">PAN Card Image</Label>
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("panImage")?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                {panPreview ? "Change Image" : "Upload Image"}
+              </Button>
+              <Input
+                id="panImage"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePanChange}
+              />
+              {panPreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={clearPanImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             {panPreview && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={clearPanImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
+                <Image
+                  src={panPreview || "/placeholder.svg"}
+                  alt="PAN preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             )}
           </div>
-          {panPreview && (
-            <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
-              <Image
-                src={panPreview || "/placeholder.svg"}
-                alt="PAN preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="licenseImage">Driver License Image</Label>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById("licenseImage")?.click()}
-              className="flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              {licensePreview ? "Change Image" : "Upload Image"}
-            </Button>
-            <Input
-              id="licenseImage"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleLicenseChange}
-            />
-            {licensePreview && (
+          <div className="space-y-2">
+            <Label htmlFor="licenseImage">Driver License Image</Label>
+            <div className="flex items-center gap-4">
               <Button
                 type="button"
-                variant="destructive"
-                size="icon"
-                onClick={clearLicenseImage}
+                variant="outline"
+                onClick={() => document.getElementById("licenseImage")?.click()}
+                className="flex items-center gap-2"
               >
-                <X className="h-4 w-4" />
+                <Upload className="h-4 w-4" />
+                {licensePreview ? "Change Image" : "Upload Image"}
               </Button>
+              <Input
+                id="licenseImage"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLicenseChange}
+              />
+              {licensePreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={clearLicenseImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {licensePreview && (
+              <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
+                <Image
+                  src={licensePreview || "/placeholder.svg"}
+                  alt="License preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             )}
           </div>
-          {licensePreview && (
-            <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
-              <Image
-                src={licensePreview || "/placeholder.svg"}
-                alt="License preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
         </div>
 
         <div className="flex justify-end gap-4 pt-4">
