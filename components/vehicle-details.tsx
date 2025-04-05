@@ -3,17 +3,25 @@
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Download } from "lucide-react";
+import { Pencil, Download, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Vehicle } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function VehicleDetails() {
   const params = useParams();
   const vehicleId = params.vehicleId as string;
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pucDialogOpen, setPucDialogOpen] = useState(false);
+  const [rcDialogOpen, setRcDialogOpen] = useState(false);
 
   useEffect(() => {
     async function fetchVehicle() {
@@ -89,36 +97,70 @@ export default function VehicleDetails() {
           </div>
         </div>
 
-        {/* PUC and RC Images */}
+        {/* PUC and RC Image Buttons */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           {vehicle.pucImage && (
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">PUC Image</h3>
-              <div className="relative h-64 w-full rounded-md overflow-hidden border">
-                <Image
-                  src={vehicle.pucImage}
-                  alt="PUC"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <h3 className="text-lg font-semibold">PUC Document</h3>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setPucDialogOpen(true)}
+              >
+                <Eye className="h-4 w-4" />
+                View PUC
+              </Button>
             </div>
           )}
 
           {vehicle.rcImage && (
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">RC Image</h3>
-              <div className="relative h-64 w-full rounded-md overflow-hidden border">
-                <Image
-                  src={vehicle.rcImage}
-                  alt="RC"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <h3 className="text-lg font-semibold">RC Document</h3>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setRcDialogOpen(true)}
+              >
+                <Eye className="h-4 w-4" />
+                View RC
+              </Button>
             </div>
           )}
         </div>
+
+        {/* PUC Dialog */}
+        <Dialog open={pucDialogOpen} onOpenChange={setPucDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>PUC Document</DialogTitle>
+            </DialogHeader>
+            <div className="relative h-[500px] w-full rounded-md overflow-hidden">
+              <Image
+                src={vehicle.pucImage || ""}
+                alt="PUC Document"
+                fill
+                className="object-contain"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* RC Dialog */}
+        <Dialog open={rcDialogOpen} onOpenChange={setRcDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>RC Document</DialogTitle>
+            </DialogHeader>
+            <div className="relative h-[500px] w-full rounded-md overflow-hidden">
+              <Image
+                src={vehicle.rcImage || ""}
+                alt="RC Document"
+                fill
+                className="object-contain"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
