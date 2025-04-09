@@ -24,6 +24,7 @@ export interface Driver {
   joiningDate?: string;
   panNumber?: string;
   aadharNumber?: string;
+  signatureImage?: string;
   licenseNumber?: string;
   address?: string;
 }
@@ -52,4 +53,13 @@ export interface Tyre {
   tyreNumber: string;
   description: string;
   installedDate: string;
+}
+
+export interface Signature {
+  _id: string;
+  name: string;
+  signatureUrl: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

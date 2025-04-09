@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import VehicleList from "@/components/vehicle-list";
+import SignatureManager from "@/components/signature-manager";
 
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
@@ -37,6 +38,7 @@ export default async function Home() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Feet Executive</h1>
         <div className="flex items-center space-x-4">
+          <SignatureManager />
           <Link href="/add-vehicle">
             <Button>Add Vehicle</Button>
           </Link>

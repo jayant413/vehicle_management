@@ -91,7 +91,7 @@ export default function VehicleList() {
     <div>
       <Input
         placeholder="Search By Vehicle Number or Driver Name"
-        className="mb-4 w-[30em]"
+        className="mb-4 w-full md:w-[30em]"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />

@@ -95,6 +95,10 @@ export default function DriverForm({
   const [driverPhotoPreview, setDriverPhotoPreview] = useState<string | null>(
     driver?.driverImage || null
   );
+  const [signatureFile, setSignatureFile] = useState<File | null>(null);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(
+    driver?.signatureImage || null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -126,6 +130,10 @@ export default function DriverForm({
     handleFileChange(e, setDriverPhotoFile, setDriverPhotoPreview);
   };
 
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileChange(e, setSignatureFile, setSignaturePreview);
+  };
+
   const clearAadharImage = () => {
     setAadharFile(null);
     setAadharPreview(null);
@@ -146,6 +154,11 @@ export default function DriverForm({
     setDriverPhotoPreview(null);
   };
 
+  const clearSignatureImage = () => {
+    setSignatureFile(null);
+    setSignaturePreview(null);
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
@@ -153,6 +166,7 @@ export default function DriverForm({
       let panCardImageUrl = driver?.panCardImage || "";
       let licenseImageUrl = driver?.licenseImage || "";
       let driverImageUrl = driver?.driverImage || "";
+      let signatureImageUrl = driver?.signatureImage || "";
 
       if (aadharFile) {
         const formData = new FormData();
@@ -238,12 +252,34 @@ export default function DriverForm({
         driverImageUrl = data.secure_url;
       }
 
+      if (signatureFile) {
+        const formData = new FormData();
+        formData.append("file", signatureFile);
+        formData.append("upload_preset", "feetTrack");
+
+        const response = await fetch(
+          "https://api.cloudinary.com/v1_1/dsmcoe91p/image/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload Signature image");
+        }
+
+        const data = await response.json();
+        signatureImageUrl = data.secure_url;
+      }
+
       const driverData = {
         ...values,
         aadharImage: aadharImageUrl,
         panCardImage: panCardImageUrl,
         licenseImage: licenseImageUrl,
         driverImage: driverImageUrl,
+        signatureImage: signatureImageUrl,
         // Use existing items or initialize with default items with 0 quantity
         itemsGiven:
           driver?.itemsGiven ||
@@ -549,6 +585,50 @@ export default function DriverForm({
                 <Image
                   src={licensePreview || "/placeholder.svg"}
                   alt="License preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="signatureImage">Driver Signature</Label>
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  document.getElementById("signatureImage")?.click()
+                }
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                {signaturePreview ? "Change Image" : "Upload Image"}
+              </Button>
+              <Input
+                id="signatureImage"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleSignatureChange}
+              />
+              {signaturePreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={clearSignatureImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {signaturePreview && (
+              <div className="relative h-40 w-full mt-4 border rounded-md overflow-hidden">
+                <Image
+                  src={signaturePreview || "/placeholder.svg"}
+                  alt="Signature preview"
                   fill
                   className="object-cover"
                 />
